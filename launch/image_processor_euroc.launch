@@ -1,0 +1,36 @@
+<launch>
+
+  <arg name="robot" default="firefly_sbx"/>
+  <arg name="calibration_file"
+    default="$(find msckf_vio)/config/camchain-imucam-euroc.yaml"/>
+
+  <!-- Image Processor Nodelet，通过<group>标签，可以将一组元素视为一个单元进行管理 -->
+  <!-- ns属性允许你为<group>标签内的所有节点和参数指定一个命名空间，type是可执行文件的名称 -->
+  <!-- standalone表示nodelet将独立运行，而不是作为一个更大的nodelet群组或nodelet管理器的一部分。这通常意味着它将启动它自己的nodelet管理器进程。
+  msckf_vio/ImageProcessorNodelet是要加载并运行的具体nodelet类的名称。这告诉nodelet管理器加载msckf_vio包中的ImageProcessorNodelet类 -->
+  <group ns="$(arg robot)">
+    <node pkg="nodelet" type="nodelet" name="image_processor"
+      args="standalone msckf_vio/ImageProcessorNodelet"
+      output="screen">
+
+      <rosparam command="load" file="$(arg calibration_file)"/>
+      <param name="grid_row" value="4"/>
+      <param name="grid_col" value="5"/>
+      <param name="grid_min_feature_num" value="3"/>
+      <param name="grid_max_feature_num" value="4"/>
+      <param name="pyramid_levels" value="3"/>
+      <param name="patch_size" value="15"/>
+      <param name="fast_threshold" value="10"/>
+      <param name="max_iteration" value="30"/>
+      <param name="track_precision" value="0.01"/>
+      <param name="ransac_threshold" value="3"/>
+      <param name="stereo_threshold" value="5"/>
+
+      <remap from="~imu" to="/imu0"/>
+      <remap from="~cam0_image" to="/cam0/image_raw"/>
+      <remap from="~cam1_image" to="/cam1/image_raw"/>
+
+    </node>
+  </group>
+
+</launch>

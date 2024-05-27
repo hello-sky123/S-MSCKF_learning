@@ -1,0 +1,27 @@
+<!--<library>标签是用于描述nodelet库中的类的XML标记，它定义在一个nodelet插件包中。
+这种描述使得ROS能够在运行时动态加载nodelet类-->
+<!--path属性指定了包含nodelet类的共享库文件的路径。这里的路径lib/libmsckf_vio_nodelet表示库文件位于包的lib目录下，文件名为libmsckf_vio_nodelet
+<class> 标签:
+name属性指定了nodelet类的名称，这里是msckf_vio/MsckfVioNodelet。在加载或运行nodelet时，这个名称用于引用特定的nodelet类。
+type属性定义了实际的类名，在C++代码中对应的是msckf_vio::MsckfVioNodelet。这是实际实现nodelet功能的C++类名。
+base_class_type属性指明了nodelet的基类类型，这里是nodelet::Nodelet。所有nodelet都必须继承自nodelet::Nodelet基类，以便与ROS的nodelet管理器兼容-->
+<library path="lib/libmsckf_vio_nodelet">
+  <class name="msckf_vio/MsckfVioNodelet"
+         type="msckf_vio::MsckfVioNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Multi-State constraint Kalman filter for vision-aided
+      inertial navigation with observability constraint.
+    </description>
+  </class>
+</library>
+
+<library path="lib/libimage_processor_nodelet">
+  <class name="msckf_vio/ImageProcessorNodelet"
+         type="msckf_vio::ImageProcessorNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Detect and track features in image sequence.
+    </description>
+  </class>
+</library>
