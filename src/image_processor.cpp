@@ -78,14 +78,17 @@ bool ImageProcessor::loadParameters() {
   cam1_distortion_coeffs[2] = cam1_distortion_coeffs_temp[2];
   cam1_distortion_coeffs[3] = cam1_distortion_coeffs_temp[3];
 
-  Mat T_imu_cam0 = utils::getTransformCV(nh, "cam0/T_cam_imu"); // 获取IMU到cam0的变换矩阵
+  Mat T_imu_cam0 =
+      utils::getTransformCV(nh, "cam0/T_cam_imu");  // 获取IMU到cam0的变换矩阵
   Matx33d R_imu_cam0(T_imu_cam0(Rect(0, 0, 3, 3)));
   Vec3d t_imu_cam0 = T_imu_cam0(Rect(3, 0, 1, 3));
   R_cam0_imu = R_imu_cam0.t();
   t_cam0_imu = -R_imu_cam0.t() * t_imu_cam0;
 
   Mat T_cam0_cam1 = utils::getTransformCV(nh, "cam1/T_cn_cnm1");
-  Mat T_imu_cam1 = T_cam0_cam1 * T_imu_cam0; // 由于使用的是左手系，所以两个矩阵出现的位置是相反的
+  Mat T_imu_cam1 =
+      T_cam0_cam1 *
+      T_imu_cam0;  // 由于使用的是左手系，所以两个矩阵出现的位置是相反的
   Matx33d R_imu_cam1(T_imu_cam1(Rect(0, 0, 3, 3)));
   Vec3d t_imu_cam1 = T_imu_cam1(Rect(3, 0, 1, 3));
   R_cam1_imu = R_imu_cam1.t();
@@ -142,13 +145,17 @@ bool ImageProcessor::loadParameters() {
 }
 
 bool ImageProcessor::createRosIO() {
+  // 发布一些话题
   feature_pub = nh.advertise<CameraMeasurement>("features", 3);
   tracking_info_pub = nh.advertise<TrackingInfo>("tracking_info", 1);
+  // 专门用于传输图像的话题，可以按不同的压缩格式传输图像
   image_transport::ImageTransport it(nh);
   debug_stereo_pub = it.advertise("debug_stereo_image", 1);
 
+  // 订阅一些话题
   cam0_img_sub.subscribe(nh, "cam0_image", 10);
   cam1_img_sub.subscribe(nh, "cam1_image", 10);
+
   stereo_sub.connectInput(cam0_img_sub, cam1_img_sub);
   stereo_sub.registerCallback(&ImageProcessor::stereoCallback, this);
   imu_sub = nh.subscribe("imu", 50, &ImageProcessor::imuCallback, this);
@@ -162,6 +169,7 @@ bool ImageProcessor::initialize() {
   ROS_INFO("Finish loading ROS parameters...");
 
   // Create feature detector.
+  // 创建一个FAST特征检测器，返回一个指向该检测器的智能指针，detector_ptr指向基类的指针
   detector_ptr = FastFeatureDetector::create(processor_config.fast_threshold);
 
   if (!createRosIO()) return false;
@@ -277,7 +285,7 @@ void ImageProcessor::initializeFirstFrame() {
   static int grid_height = img.rows / processor_config.grid_row;
   static int grid_width = img.cols / processor_config.grid_col;
 
-  // Detect new features on the frist image.
+  // Detect new features on the first image.
   vector<KeyPoint> new_features(0);
   detector_ptr->detect(img, new_features);
 
